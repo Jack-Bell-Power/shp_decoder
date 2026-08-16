@@ -5,9 +5,8 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt};
-use godot::classes::{Texture2D, class_macros::private::virtuals::Xrvrs::Gd};
 
-use crate::{decoder::pal::palette::Palette, errors::Ra2Error};
+use crate::decoder::pal::palette::Palette;
 
 use super::shp_frame::ShpFrame;
 use super::shp_header::ShpHeader;
@@ -19,7 +18,7 @@ pub struct ShpReader {
 
 impl ShpReader {
     //Create a new ShpReader from a file.
-    fn new(file_path: &Path) -> Result<Self, Ra2Error> {
+    fn new(file_path: &Path) -> anyhow::Result<Self> {
         let file = File::open(file_path)?;
 
         let mut reader = BufReader::new(file);
@@ -31,7 +30,7 @@ impl ShpReader {
         })
     }
 
-    fn get_frame(&mut self, index: u64) -> Result<ShpFrame, Ra2Error> {
+    fn get_frame(&mut self, index: u64) -> anyhow::Result<ShpFrame> {
         self.reader.seek(SeekFrom::Start(8 + index * 24))?;
         let mut buffer = ShpFrame::default();
         buffer.read_shp_frame_header(&mut self.reader)?;
@@ -40,7 +39,7 @@ impl ShpReader {
     }
 }
 
-fn read_shp_header<R: Read>(reader: &mut R) -> Result<ShpHeader, Ra2Error> {
+fn read_shp_header<R: Read>(reader: &mut R) -> anyhow::Result<ShpHeader> {
     let reserved = reader.read_u16::<LittleEndian>()?;
     let width = reader.read_u16::<LittleEndian>()?;
     let height = reader.read_u16::<LittleEndian>()?;
@@ -58,7 +57,7 @@ pub fn decode_shp_to_image(
     shp_path: &Path,
     pal_path: &Path,
     is_half: bool,
-) -> Result<Vec<Gd<Texture2D>>, Ra2Error> {
+) -> anyhow::Result<()> {
     let palette = Palette::load(pal_path)?;
 
     let mut handles = Vec::new();
@@ -88,5 +87,5 @@ pub fn decode_shp_to_image(
         _ => {}
     }
 
-    Ok(handles)
+    Ok(())
 }

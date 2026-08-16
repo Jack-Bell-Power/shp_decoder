@@ -1,12 +1,9 @@
 use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{LittleEndian, ReadBytesExt};
-use godot::classes::{
-    Image, ImageTexture, Texture2D, class_macros::private::virtuals::{Xrvrs::Gd, ZipReader::PackedByteArray}, image::Format,
-};
 use image::{Rgba, RgbaImage};
 
-use crate::{decoder::pal::palette::Palette, errors::Ra2Error};
+use crate::decoder::pal::palette::Palette;
 
 #[derive(Default)]
 pub struct ShpFrame {
@@ -33,7 +30,7 @@ pub struct ShpFrame {
 }
 
 impl ShpFrame {
-    pub fn read_shp_frame_header<R: Read>(&mut self, reader: &mut R) -> Result<(), Ra2Error> {
+    pub fn read_shp_frame_header<R: Read>(&mut self, reader: &mut R) -> anyhow::Result<()> {
         self.x = reader.read_u16::<LittleEndian>()?;
         self.y = reader.read_u16::<LittleEndian>()?;
         self.width = reader.read_u16::<LittleEndian>()?;
@@ -46,7 +43,7 @@ impl ShpFrame {
         Ok(())
     }
 
-    pub fn read_shp_frame_data<R: Read + Seek>(&mut self, reader: &mut R) -> Result<(), Ra2Error> {
+    pub fn read_shp_frame_data<R: Read + Seek>(&mut self, reader: &mut R) -> anyhow::Result<()> {
         //If the offset is 0, it indicates an empty frame.
         if self.offset == 0 {
             return Ok(());
@@ -75,7 +72,7 @@ impl ShpFrame {
         palette: &Palette,
         width: u32,
         depth: u32,
-    ) -> Result<Gd<Texture2D>, Ra2Error> {
+    ) -> anyhow::Result<RgbaImage> {
         let mut image = RgbaImage::new(width, depth);
         let mut index = 0;
         for dy in 0..self.height {
@@ -90,7 +87,7 @@ impl ShpFrame {
                 index += 1;
             }
         }
-        Ok(rgba_to_image(image)?)
+        Ok(image)
     }
 }
 
@@ -98,7 +95,7 @@ fn decompress_rle_data<R: Read>(
     reader: &mut R,
     frame_width: u16,
     frame_height: u16,
-) -> Result<Vec<u8>, Ra2Error> {
+) -> anyhow::Result<Vec<u8>> {
     let mut decompressed_data = Vec::with_capacity(frame_width as usize * frame_height as usize);
     for _ in 0..frame_height {
         let mut line_buffer = Vec::with_capacity(frame_width as usize);
@@ -126,29 +123,4 @@ fn decompress_rle_data<R: Read>(
         }
     }
     Ok(decompressed_data)
-}
-
-fn rgba_to_image(rgba: RgbaImage) -> Result<Gd<Texture2D>, Ra2Error> {
-    let (width, height) = rgba.dimensions();
-
-    // RGBA pixel data.
-    let data = rgba.into_raw();
-
-    // Rust Vec<u8> -> Godot PackedByteArray
-    let mut bytes = PackedByteArray::new();
-    bytes.extend(data);
-
-    // Create a Godot Image.
-    let image = Image::create_from_data(
-        width as i32,
-        height as i32,
-        false,
-        Format::RGBA8,
-        &bytes,
-    )
-    .ok_or(Ra2Error::ImageCreationFailed)?;
-
-    // Create an ImageTexture from the Image and return it.
-    let texture = ImageTexture::create_from_image(&image).ok_or(Ra2Error::ImageCreationFailed)?;
-    Ok(texture.upcast::<Texture2D>())
 }
