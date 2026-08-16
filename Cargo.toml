@@ -1,0 +1,10 @@
+[package]
+name = "shp_decoder"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+windows-reactor = { git = "https://github.com/microsoft/windows-rs/", branch = "master"}
+
+[build-dependencies]
+windows-reactor-setup = { git = "https://github.com/microsoft/windows-rs/", branch = "master"}
