@@ -7,45 +7,45 @@ jobs:
   build:
     runs-on: windows-latest
 
-  permissions:
-      contents: write
+    permissions:
+        contents: write
 
-  steps:
-        - name: Checkout source code
-          uses: actions/checkout@v7
+    steps:
+          - name: Checkout source code
+            uses: actions/checkout@v7
 
-        - name: Extract version number from Cargo.toml
-          id: version
-          shell: bash
-          run: |
-            echo "version=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')" >> $GITHUB_OUTPUT
+          - name: Extract version number from Cargo.toml
+            id: version
+            shell: bash
+            run: |
+              echo "version=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')" >> $GITHUB_OUTPUT
 
-        - name: Install Rust toolchain
-          uses: dtolnay/rust-toolchain@stable
+          - name: Install Rust toolchain
+            uses: dtolnay/rust-toolchain@stable
 
-        - name: Build release binary
-          run: cargo build --release
-        
-        - name: Create GitHub Release
-          uses: softprops/action-gh-release@v3
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            name: Shp Decoder v${{ steps.version.outputs.version }}
-            tag_name: v${{ steps.version.outputs.version }}
-            files: target/release/shp_decoder.exe
-            prerelease: false
-            body: |
-              ## 🔧 更新内容
+          - name: Build release binary
+            run: cargo build --release
+          
+          - name: Create GitHub Release
+            uses: softprops/action-gh-release@v3
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            with:
+              name: Shp Decoder v${{ steps.version.outputs.version }}
+              tag_name: v${{ steps.version.outputs.version }}
+              files: target/release/shp_decoder.exe
+              prerelease: false
+              body: |
+                ## 🔧 更新内容
 
-              - 新增 SHP 文件转换功能
-              - 新增 PAL 调色板文件支持
-              - 支持批量提取 SHP 帧图像
-              - 优化图像解码流程
-              - 修复按钮点击问题
-              - 添加shp一半选择
+                - 新增 SHP 文件转换功能
+                - 新增 PAL 调色板文件支持
+                - 支持批量提取 SHP 帧图像
+                - 优化图像解码流程
+                - 修复按钮点击问题
+                - 添加shp一半选择
 
-              ## 📦 发布说明
+                ## 📦 发布说明
 
-              - 首次公开发布
-              - 当前版本：v${{ steps.version.outputs.version }}
+                - 首次公开发布
+                - 当前版本：v${{ steps.version.outputs.version }}
