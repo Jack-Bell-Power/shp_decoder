@@ -1,10 +1,9 @@
 use std::{
-    fs::File,
-    io::{BufReader, Read, Seek, SeekFrom},
-    path::Path,
+    fs::File, io::{BufReader, Read, Seek, SeekFrom}, path::Path,
 };
 
 use byteorder::{LittleEndian, ReadBytesExt};
+use image::RgbaImage;
 
 use crate::decoder::pal::palette::Palette;
 
@@ -52,15 +51,15 @@ fn read_shp_header<R: Read>(reader: &mut R) -> anyhow::Result<ShpHeader> {
     })
 }
 
-//Convert shp file to png format
-pub fn decode_shp_to_image(
+//Convert shp file to rgba image format
+fn decode_shp_to_rgba_image(
     shp_path: &Path,
     pal_path: &Path,
     is_half: bool,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Vec<RgbaImage>> {
     let palette = Palette::load(pal_path)?;
 
-    let mut handles = Vec::new();
+    let mut iamges = Vec::new();
 
     let mut shp = ShpReader::new(shp_path)?;
 
@@ -81,10 +80,31 @@ pub fn decode_shp_to_image(
                     shp.header.height as u32,
                 )?;
 
-                handles.push(image);
+                iamges.push(image);
             }
         }
         _ => {}
+    }
+
+    Ok(iamges)
+}
+
+pub fn rgba_image_to_png(
+    shp_path: &Path,
+    pal_path: &Path,
+    is_half: bool,
+    output_path: &Path,
+) -> anyhow::Result<()> {
+    let images = decode_shp_to_rgba_image(shp_path, pal_path, is_half)?;
+    let name = shp_path.file_stem().unwrap().to_string_lossy();
+    // Make sure the path exists.
+    std::fs::create_dir_all(output_path)?;
+
+    for (i, image) in images.iter().enumerate() {
+        let file_path = output_path.join(
+            format!("{}_{:03}.png", name, i)
+        );
+        image.save(file_path)?;
     }
 
     Ok(())
