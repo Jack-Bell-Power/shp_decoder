@@ -40,17 +40,12 @@ jobs:
             with:
               name: Shp Decoder v${{ steps.version.outputs.version }}
               tag_name: v${{ steps.version.outputs.version }}
-              files: target/release/shp_decoder.exe
+              files: shp_decoder.zip
               prerelease: false
               body: |
                 ## 🔧 更新内容
 
-                - 添加serde和serde_json来实现json读取,最终会在同级别目录生成一个config.json
-                - 文件,用来保存需要存储的数据
-                - 所有数据都能够存储,下次不用重新选择
-                - 添加config.rs文件定义config数据结构
-                - 添加全局变量保存退出订阅和数据单例
-                - 为exe外层包裹一个文件夹
+                - 修复文件上传错误
 
                 ## 📦 发布说明
 
