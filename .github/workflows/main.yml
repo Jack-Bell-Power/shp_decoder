@@ -38,12 +38,7 @@ jobs:
               body: |
                 ## 🔧 更新内容
 
-                - 新增错误级别
-                - 添加转换时信息
-                - [Info]: Saving frame 26 / 26 | half mode: ON
-                - [Info]: Saved: "E:\\output\\numislmk_025.png"
-                - 显示当前帧和所有帧，还有是否为半shp模式
-                - 显示当前帧输出位置
+                - 更改输入框名称到output path
 
                 ## 📦 发布说明
 

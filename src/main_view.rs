@@ -86,7 +86,7 @@ impl Render for MainView {
                 ),
             )
             .child(
-                field().label("Extraction path:").child(
+                field().label("Output path:").child(
                     h_flex()
                         .gap(px(8.))
                         .px(px(8.))
@@ -97,7 +97,7 @@ impl Render for MainView {
                                 .on_click(cx.listener(|_, _, window, cx| {
                                     cx.spawn_in(window, async |this, cx| {
                                         if let Some(file) = AsyncFileDialog::new()
-                                            .set_title("Select extraction path")
+                                            .set_title("Select output path")
                                             .pick_folder()
                                             .await
                                         {
