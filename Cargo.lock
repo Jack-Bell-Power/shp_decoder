@@ -5337,7 +5337,7 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "shp_decoder"
-version = "0.1.6"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -5346,6 +5346,8 @@ dependencies = [
  "gpui-component-assets",
  "image",
  "rfd",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -1,17 +1,17 @@
 use std::path::Path;
 
-use gpui::{Context, Entity, Window, prelude::*, px};
+use gpui::{Context, Entity, Subscription, Window, prelude::*, px};
 use gpui_component::{
     IndexPath,
     button::Button,
     form::{field, v_form},
     h_flex,
     input::{Input, InputState},
-    select::{Select, SelectState},
+    select::{Select, SelectEvent, SelectState},
 };
 use rfd::AsyncFileDialog;
 
-use crate::decoder::shp::shp_reader::rgba_image_to_png;
+use crate::{AppState, decoder::shp::shp_reader::rgba_image_to_png};
 
 pub struct MainView {
     pal_path: Entity<InputState>,
@@ -19,6 +19,7 @@ pub struct MainView {
     output_path: Entity<InputState>,
 
     select_state: Entity<SelectState<Vec<String>>>,
+    _select_subscription: Subscription,
 }
 
 impl Render for MainView {
@@ -134,7 +135,7 @@ impl Render for MainView {
                                 }
 
                                 let is_half = match this.select_state.read(cx).selected_index(cx) {
-                                    Some(index ) => index.row == 0,
+                                    Some(index) => index.row == 0,
                                     None => true,
                                 };
 
@@ -154,42 +155,83 @@ impl Render for MainView {
 
 impl MainView {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let pal_path = cx.new(|cx| InputState::new(window, cx).placeholder("Enter pal path"));
-        let shp_path = cx.new(|cx| InputState::new(window, cx).placeholder("Enter shp path"));
-        let output_path = cx.new(|cx| InputState::new(window, cx).placeholder("Enter output path"));
+        let config = cx.global::<AppState>().config.clone();
+
+        let pal_path = cx.new(|cx| {
+            InputState::new(window, cx)
+                .placeholder("Enter pal path")
+                .default_value(config.pal_path)
+        });
+        let shp_path = cx.new(|cx| {
+            InputState::new(window, cx)
+                .placeholder("Enter shp path")
+                .default_value(config.shp_path)
+        });
+        let output_path = cx.new(|cx| {
+            InputState::new(window, cx)
+                .placeholder("Enter output path")
+                .default_value(config.output_path)
+        });
 
         let select_state = cx.new(|cx| {
             SelectState::new(
                 vec!["true".to_string(), "false".to_string()],
-                Some(IndexPath::default()),
+                Some(IndexPath::default().row(config.half_index)),
                 window,
                 cx,
             )
         });
+
+        let _select_subscription = cx.subscribe_in(
+            &select_state,
+            window,
+            |_, state, event, _, cx| match event {
+                SelectEvent::Confirm(_) => {
+                    if let Some(index) = state.read(cx).selected_index(cx) {
+                        cx.update_global::<AppState, _>(|state, _cx| {
+                            state.config.half_index = index.row;
+                        });
+                    }
+                }
+            },
+        );
 
         Self {
             pal_path,
             shp_path,
             output_path,
             select_state,
+            _select_subscription,
         }
     }
 
     fn set_pal_path(&self, path: String, window: &mut Window, cx: &mut Context<Self>) {
         self.pal_path.update(cx, |state, cx| {
-            state.set_value(path, window, cx);
+            state.set_value(&path, window, cx);
+        });
+
+        cx.update_global::<AppState, _>(|state, _cx| {
+            state.config.pal_path = path;
         });
     }
 
     fn set_shp_path(&self, path: String, window: &mut Window, cx: &mut Context<Self>) {
         self.shp_path.update(cx, |state, cx| {
-            state.set_value(path, window, cx);
+            state.set_value(&path, window, cx);
+        });
+
+        cx.update_global::<AppState, _>(|state, _cx| {
+            state.config.shp_path = path;
         });
     }
 
     fn set_output_path(&self, path: String, window: &mut Window, cx: &mut Context<Self>) {
         self.output_path.update(cx, |state, cx| {
-            state.set_value(path, window, cx);
+            state.set_value(&path, window, cx);
+        });
+
+        cx.update_global::<AppState, _>(|state, _cx| {
+            state.config.output_path = path;
         });
     }
 

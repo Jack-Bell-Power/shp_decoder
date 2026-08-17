@@ -25,6 +25,13 @@ jobs:
 
           - name: Build release binary
             run: cargo build --release
+
+          - name: Package release
+            shell: bash
+            run: |
+              mkdir shp_decoder
+              cp target/release/shp_decoder.exe shp_decoder/
+              7z a shp_decoder.zip ./shp_decoder
           
           - name: Create GitHub Release
             uses: softprops/action-gh-release@v3
@@ -38,8 +45,13 @@ jobs:
               body: |
                 ## 🔧 更新内容
 
-                - 更改输入框名称到output path
+                - 添加serde和serde_json来实现json读取,最终会在同级别目录生成一个config.json
+                - 文件,用来保存需要存储的数据
+                - 所有数据都能够存储,下次不用重新选择
+                - 添加config.rs文件定义config数据结构
+                - 添加全局变量保存退出订阅和数据单例
+                - 为exe外层包裹一个文件夹
 
                 ## 📦 发布说明
 
-                - 当前版本：v${{ steps.version.outputs.version }}
+                - 当前版本: v${{ steps.version.outputs.version }}
