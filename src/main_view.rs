@@ -129,7 +129,7 @@ impl Render for MainView {
                             .w_full()
                             .on_click(cx.listener(|this, _, _, cx| {
                                 if let Err(err) = this.validate_paths(cx) {
-                                    println!("{:?}", err);
+                                    println!("[Error]: {:?}", err);
                                     return;
                                 }
 

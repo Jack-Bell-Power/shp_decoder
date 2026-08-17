@@ -1,5 +1,7 @@
 use std::{
-    fs::File, io::{BufReader, Read, Seek, SeekFrom}, path::Path,
+    fs::File,
+    io::{BufReader, Read, Seek, SeekFrom},
+    path::Path,
 };
 
 use byteorder::{LittleEndian, ReadBytesExt};
@@ -101,10 +103,18 @@ pub fn rgba_image_to_png(
     std::fs::create_dir_all(output_path)?;
 
     for (i, image) in images.iter().enumerate() {
-        let file_path = output_path.join(
-            format!("{}_{:03}.png", name, i)
+        let file_path = output_path.join(format!("{}_{:03}.png", name, i));
+
+        println!(
+            "[Info]: Saving frame {} / {} | half mode: {}",
+            i + 1,
+            images.len(),
+            if is_half { "ON" } else { "OFF" }
         );
-        image.save(file_path)?;
+
+        image.save(&file_path)?;
+
+        println!("[Info]: Saved: {:?}", file_path);
     }
 
     Ok(())

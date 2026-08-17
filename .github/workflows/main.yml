@@ -38,14 +38,13 @@ jobs:
               body: |
                 ## 🔧 更新内容
 
-                - 新增 SHP 文件转换功能
-                - 新增 PAL 调色板文件支持
-                - 支持批量提取 SHP 帧图像
-                - 优化图像解码流程
-                - 修复按钮点击问题
-                - 添加shp一半选择
+                - 新增错误级别
+                - 添加转换时信息
+                - [Info]: Saving frame 26 / 26 | half mode: ON
+                - [Info]: Saved: "E:\\output\\numislmk_025.png"
+                - 显示当前帧和所有帧，还有是否为半shp模式
+                - 显示当前帧输出位置
 
                 ## 📦 发布说明
 
-                - 首次公开发布
                 - 当前版本：v${{ steps.version.outputs.version }}
